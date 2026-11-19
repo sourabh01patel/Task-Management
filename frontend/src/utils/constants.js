@@ -36,3 +36,4 @@ export const PRIORITY_COLORS = {
     border: 'border-l-rose-500',
   },
 };
+

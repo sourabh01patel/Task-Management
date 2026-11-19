@@ -17,6 +17,8 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
@@ -24,14 +26,30 @@ app.use(
   cors({
     origin: function (origin, callback) {
       // Allow requests with no origin (like mobile apps, curl, Postman)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Blocked by CORS policy'));
+      if (!origin) {
+        return callback(null, true);
       }
+
+      // In development, automatically allow all local network IPs and localhost
+      if (process.env.NODE_ENV !== 'production') {
+        const isLocalOrigin =
+          /^http:\/\/(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$/.test(
+            origin
+          );
+        if (isLocalOrigin || allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+      }
+
+      // In production, check against explicit allowed origins
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      callback(new Error(`Origin ${origin} is blocked by CORS policy`));
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );

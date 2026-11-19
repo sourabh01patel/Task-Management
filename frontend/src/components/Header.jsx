@@ -44,3 +44,4 @@ const Header = ({ onOpenSidebar }) => {
 };
 
 export default Header;
+

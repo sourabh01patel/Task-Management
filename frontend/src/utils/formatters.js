@@ -36,3 +36,4 @@ export const isTaskDueSoon = (dueDate, status) => {
   const diffDays = (due - now) / (1000 * 60 * 60 * 24);
   return diffDays >= 0 && diffDays <= 3;
 };
+

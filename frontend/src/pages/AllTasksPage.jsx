@@ -129,3 +129,4 @@ const AllTasksPage = () => {
 };
 
 export default AllTasksPage;
+

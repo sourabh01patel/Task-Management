@@ -54,3 +54,4 @@ const ConfirmModal = ({ isOpen, title, message, confirmText = 'Delete', onConfir
 };
 
 export default ConfirmModal;
+

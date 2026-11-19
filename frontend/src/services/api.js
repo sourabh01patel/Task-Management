@@ -1,7 +1,19 @@
 import axios from 'axios';
 
+// Dynamically determine the backend base URL
+const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  // If production URL or explicit full URL (e.g. deployed on render/railway)
+  if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+    return envUrl;
+  }
+  // Otherwise, match the current hostname (localhost, 127.0.0.1, or local network IP like 10.x / 192.168.x)
+  const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+  return `http://${host}:5000/api`;
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -42,3 +54,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+

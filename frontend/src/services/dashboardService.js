@@ -6,3 +6,4 @@ export const dashboardService = {
     return response.data;
   },
 };
+
