@@ -175,9 +175,6 @@ const UserProfilePage = () => {
           <User className="w-6 h-6 text-indigo-600" />
           Account & Profile Settings
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Manage your personal photo, information, and security credentials
-        </p>
       </div>
 
       {/* Hidden file input for photo upload */}
@@ -299,8 +296,7 @@ const UserProfilePage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Personal Details Card */}
         <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-xs">
-          <h3 className="text-lg font-bold text-slate-900 mb-1">Personal Details</h3>
-          <p className="text-xs text-slate-500 mb-6">Update your display name and email address</p>
+          <h3 className="text-lg font-bold text-slate-900 mb-5">Personal Details</h3>
 
           {profileSuccess && (
             <div className="mb-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium flex items-center gap-2">
@@ -368,8 +364,7 @@ const UserProfilePage = () => {
 
         {/* Change Password Card */}
         <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-xs">
-          <h3 className="text-lg font-bold text-slate-900 mb-1">Security & Password</h3>
-          <p className="text-xs text-slate-500 mb-6">Ensure your account uses a strong password</p>
+          <h3 className="text-lg font-bold text-slate-900 mb-5">Security & Password</h3>
 
           {passwordSuccess && (
             <div className="mb-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium flex items-center gap-2">

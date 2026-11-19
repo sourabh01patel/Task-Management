@@ -106,9 +106,6 @@ const EditTaskPage = () => {
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900">Edit Task</h1>
-            <p className="text-xs sm:text-sm text-slate-500">
-              Update task details, schedule, or progress status
-            </p>
           </div>
         </div>
 

@@ -41,7 +41,6 @@ const LoginPage = () => {
             <Sparkles className="w-6 h-6" />
           </div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Welcome Back</h2>
-          <p className="text-sm text-slate-500 mt-1">Sign in to manage your daily tasks</p>
         </div>
 
         {/* Error message alert */}

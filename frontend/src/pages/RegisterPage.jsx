@@ -53,7 +53,6 @@ const RegisterPage = () => {
             <Sparkles className="w-6 h-6" />
           </div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Create an Account</h2>
-          <p className="text-sm text-slate-500 mt-1">Start organizing your productivity today</p>
         </div>
 
         {/* Error message alert */}

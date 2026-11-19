@@ -70,9 +70,6 @@ const CreateTaskPage = () => {
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900">Create New Task</h1>
-            <p className="text-xs sm:text-sm text-slate-500">
-              Fill in the details to schedule and assign your task
-            </p>
           </div>
         </div>
 

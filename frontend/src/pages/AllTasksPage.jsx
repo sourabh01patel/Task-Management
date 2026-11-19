@@ -53,9 +53,6 @@ const AllTasksPage = () => {
             <CheckSquare className="w-6 h-6 text-indigo-600" />
             All Tasks
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Browse, search, sort, and organize your tasks
-          </p>
         </div>
 
         <div className="flex items-center gap-3">
