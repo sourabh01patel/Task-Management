@@ -94,18 +94,22 @@ const AllTasksPage = () => {
           <div className="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 mx-auto flex items-center justify-center mb-4">
             <CheckSquare className="w-8 h-8" />
           </div>
-          <h3 className="text-lg font-bold text-slate-800">No tasks found</h3>
+          <h3 className="text-lg font-bold text-slate-800">No tasks match your filter</h3>
           <p className="text-sm text-slate-500 mt-1 mb-6">
-            {filters.search || filters.status !== 'All' || filters.priority !== 'All'
-              ? 'Try adjusting your search criteria or resetting filters.'
+            {filters.search || filters.status !== 'All' || filters.priority !== 'All' || filters.overdue || filters.upcoming
+              ? filters.overdue
+                ? 'No overdue tasks found! All your tasks are scheduled for future dates.'
+                : filters.upcoming
+                ? 'No tasks due in the next 7 days. Your tasks have deadlines further out.'
+                : 'Try adjusting your search keywords or clearing active filters.'
               : 'You have not created any tasks yet. Create your first task to get started!'}
           </p>
-          {filters.search || filters.status !== 'All' || filters.priority !== 'All' ? (
+          {filters.search || filters.status !== 'All' || filters.priority !== 'All' || filters.overdue || filters.upcoming ? (
             <button
               onClick={handleResetFilters}
-              className="px-4 py-2 text-sm font-semibold text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition"
+              className="px-5 py-2.5 text-xs font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 shadow-sm transition"
             >
-              Clear Filters
+              Clear All Filters
             </button>
           ) : (
             <Link

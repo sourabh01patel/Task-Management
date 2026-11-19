@@ -13,17 +13,18 @@ import {
 import { formatDate, isTaskOverdue, isTaskDueSoon } from '../utils/formatters';
 import { STATUS_COLORS, PRIORITY_COLORS, TASK_STATUSES } from '../utils/constants';
 import ConfirmModal from './ConfirmModal';
+import TaskDetailModal from './TaskDetailModal';
 
 const TaskCard = ({ task }) => {
   const { updateTaskStatus, deleteTask } = useTasks();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const isOverdue = isTaskOverdue(task.dueDate, task.status);
   const isDueSoon = isTaskDueSoon(task.dueDate, task.status);
 
-  const handleStatusChange = async (e) => {
-    const newStatus = e.target.value;
+  const handleStatusChange = async (newStatus) => {
     setIsUpdatingStatus(true);
     await updateTaskStatus(task._id, newStatus);
     setIsUpdatingStatus(false);
@@ -37,17 +38,21 @@ const TaskCard = ({ task }) => {
   return (
     <>
       <div
-        className={`bg-white rounded-2xl p-5 border transition-all duration-200 hover:shadow-md flex flex-col justify-between ${
+        className={`bg-white rounded-2xl p-5 border transition-all duration-200 hover:shadow-lg flex flex-col justify-between cursor-pointer group ${
           task.status === 'Done'
-            ? 'border-slate-200 bg-slate-50/60 opacity-90'
+            ? 'border-slate-200 bg-slate-50/70 opacity-90'
             : isOverdue
             ? 'border-rose-300 ring-1 ring-rose-200 shadow-xs'
-            : 'border-slate-200 hover:border-indigo-200'
+            : 'border-slate-200 hover:border-indigo-300'
         }`}
+        onClick={() => setShowDetailModal(true)}
       >
         <div>
           {/* Header row: Priority Badge & Actions */}
-          <div className="flex items-center justify-between gap-2 mb-3">
+          <div
+            className="flex items-center justify-between gap-2 mb-3"
+            onClick={(e) => e.stopPropagation()}
+          >
             <span
               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${
                 PRIORITY_COLORS[task.priority]?.badge || 'bg-slate-100 text-slate-700'
@@ -66,11 +71,15 @@ const TaskCard = ({ task }) => {
                 to={`/tasks/edit/${task._id}`}
                 className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
                 title="Edit task"
+                onClick={(e) => e.stopPropagation()}
               >
                 <Edit2 className="w-4 h-4" />
               </Link>
               <button
-                onClick={() => setShowDeleteModal(true)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteModal(true);
+                }}
                 className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
                 title="Delete task"
               >
@@ -79,10 +88,10 @@ const TaskCard = ({ task }) => {
             </div>
           </div>
 
-          {/* Title */}
+          {/* Title (clickable) */}
           <h4
-            className={`text-base font-bold text-slate-900 leading-snug mb-1.5 ${
-              task.status === 'Done' ? 'line-through text-slate-400' : ''
+            className={`text-base font-bold text-slate-900 leading-snug mb-1.5 group-hover:text-indigo-600 transition ${
+              task.status === 'Done' ? 'line-through text-slate-400 group-hover:text-slate-500' : ''
             }`}
           >
             {task.title}
@@ -97,7 +106,10 @@ const TaskCard = ({ task }) => {
         </div>
 
         {/* Footer Area: Due Date & Status dropdown */}
-        <div className="pt-4 border-t border-slate-100 mt-4 space-y-3">
+        <div
+          className="pt-4 border-t border-slate-100 mt-4 space-y-3"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Due date info */}
           <div className="flex items-center justify-between text-xs">
             <div
@@ -125,7 +137,7 @@ const TaskCard = ({ task }) => {
             <label className="text-xs font-medium text-slate-400">Status:</label>
             <select
               value={task.status}
-              onChange={handleStatusChange}
+              onChange={(e) => handleStatusChange(e.target.value)}
               disabled={isUpdatingStatus}
               className={`text-xs font-semibold px-2.5 py-1.5 rounded-xl border transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                 STATUS_COLORS[task.status]?.badge || 'bg-slate-100 text-slate-700'
@@ -140,6 +152,15 @@ const TaskCard = ({ task }) => {
           </div>
         </div>
       </div>
+
+      {/* Task Details Modal */}
+      <TaskDetailModal
+        task={task}
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        onStatusChange={handleStatusChange}
+        onDeleteClick={() => setShowDeleteModal(true)}
+      />
 
       {/* Delete Confirmation Modal */}
       <ConfirmModal
@@ -156,4 +177,3 @@ const TaskCard = ({ task }) => {
 };
 
 export default TaskCard;
-

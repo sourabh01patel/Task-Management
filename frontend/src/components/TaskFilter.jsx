@@ -1,8 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, ArrowUpDown, X, AlertCircle, Clock } from 'lucide-react';
 import { TASK_STATUSES, TASK_PRIORITIES } from '../utils/constants';
 
 const TaskFilter = ({ filters, onFilterChange, onReset }) => {
+  const [searchTerm, setSearchTerm] = useState(filters.search || '');
+
+  // Keep local search term in sync if reset externally
+  useEffect(() => {
+    setSearchTerm(filters.search || '');
+  }, [filters.search]);
+
+  // Debounce search input by 300ms
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchTerm !== (filters.search || '')) {
+        onFilterChange('search', searchTerm);
+      }
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [searchTerm, filters.search, onFilterChange]);
+
   const hasActiveFilters =
     filters.search ||
     filters.status !== 'All' ||
@@ -16,20 +34,23 @@ const TaskFilter = ({ filters, onFilterChange, onReset }) => {
     <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs mb-6 space-y-4">
       {/* Top Row: Search & Quick Presets */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Search input */}
+        {/* Search input with debounced local state */}
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
             placeholder="Search tasks by title..."
-            value={filters.search || ''}
-            onChange={(e) => onFilterChange('search', e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
           />
-          {filters.search && (
+          {searchTerm && (
             <button
-              onClick={() => onFilterChange('search', '')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              onClick={() => {
+                setSearchTerm('');
+                onFilterChange('search', '');
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
             >
               <X className="w-4 h-4" />
             </button>
@@ -133,7 +154,10 @@ const TaskFilter = ({ filters, onFilterChange, onReset }) => {
         {/* Reset button */}
         {hasActiveFilters && (
           <button
-            onClick={onReset}
+            onClick={() => {
+              setSearchTerm('');
+              onReset();
+            }}
             className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition flex items-center gap-1 ml-auto"
           >
             <X className="w-3.5 h-3.5" />
@@ -146,4 +170,3 @@ const TaskFilter = ({ filters, onFilterChange, onReset }) => {
 };
 
 export default TaskFilter;
-

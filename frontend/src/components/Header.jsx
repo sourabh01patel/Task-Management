@@ -1,10 +1,11 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Menu, Plus, UserCircle } from 'lucide-react';
+import { Menu, Plus, UserCircle, LayoutDashboard, CheckSquare } from 'lucide-react';
 
 const Header = ({ onOpenSidebar }) => {
   const { user } = useAuth();
+  const location = useLocation();
 
   return (
     <header className="sticky top-0 z-30 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between">
@@ -17,9 +18,36 @@ const Header = ({ onOpenSidebar }) => {
         >
           <Menu className="w-5 h-5" />
         </button>
-        <span className="text-sm font-medium text-slate-500 hidden sm:inline">
+
+        <span className="text-sm font-medium text-slate-500 hidden md:inline">
           Welcome back, <span className="font-semibold text-slate-800">{user?.name}</span> 👋
         </span>
+
+        {/* Quick navigation tabs */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+          <Link
+            to="/dashboard"
+            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
+              location.pathname === '/dashboard' || location.pathname === '/'
+                ? 'bg-white text-indigo-700 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </Link>
+          <Link
+            to="/tasks"
+            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition ${
+              location.pathname === '/tasks'
+                ? 'bg-white text-indigo-700 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <CheckSquare className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Tasks</span>
+          </Link>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
