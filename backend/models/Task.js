@@ -41,6 +41,42 @@ const taskSchema = new mongoose.Schema(
       required: [true, 'Task must belong to a user'],
       index: true,
     },
+    progressPercentage: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0,
+    },
+    dailyLogs: [
+      {
+        date: {
+          type: Date,
+          default: Date.now,
+          required: true,
+        },
+        note: {
+          type: String,
+          required: [true, 'Please provide a progress update note'],
+          trim: true,
+          maxlength: [1000, 'Note cannot exceed 1000 characters'],
+        },
+        progressPercentage: {
+          type: Number,
+          min: 0,
+          max: 100,
+          default: 0,
+        },
+        hoursSpent: {
+          type: Number,
+          min: 0,
+          default: 0,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

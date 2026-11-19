@@ -8,21 +8,25 @@ import {
   Edit2,
   Trash2,
   CheckCircle2,
-  MoreVertical,
+  TrendingUp,
 } from 'lucide-react';
 import { formatDate, isTaskOverdue, isTaskDueSoon } from '../utils/formatters';
 import { STATUS_COLORS, PRIORITY_COLORS, TASK_STATUSES } from '../utils/constants';
 import ConfirmModal from './ConfirmModal';
 import TaskDetailModal from './TaskDetailModal';
+import TaskProgressModal from './TaskProgressModal';
 
 const TaskCard = ({ task }) => {
   const { updateTaskStatus, deleteTask } = useTasks();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const isOverdue = isTaskOverdue(task.dueDate, task.status);
   const isDueSoon = isTaskDueSoon(task.dueDate, task.status);
+  const progress = task.progressPercentage || 0;
+  const logCount = task.dailyLogs?.length || 0;
 
   const handleStatusChange = async (newStatus) => {
     setIsUpdatingStatus(true);
@@ -67,6 +71,16 @@ const TaskCard = ({ task }) => {
             </span>
 
             <div className="flex items-center gap-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowProgressModal(true);
+                }}
+                className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+                title="View & Add Day-by-Day Progress"
+              >
+                <TrendingUp className="w-4 h-4" />
+              </button>
               <Link
                 to={`/tasks/edit/${task._id}`}
                 className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
@@ -88,7 +102,7 @@ const TaskCard = ({ task }) => {
             </div>
           </div>
 
-          {/* Title (clickable) */}
+          {/* Title */}
           <h4
             className={`text-base font-bold text-slate-900 leading-snug mb-1.5 group-hover:text-indigo-600 transition ${
               task.status === 'Done' ? 'line-through text-slate-400 group-hover:text-slate-500' : ''
@@ -99,15 +113,44 @@ const TaskCard = ({ task }) => {
 
           {/* Description */}
           {task.description && (
-            <p className="text-sm text-slate-500 line-clamp-3 mb-4 leading-relaxed">
+            <p className="text-sm text-slate-500 line-clamp-3 mb-3 leading-relaxed">
               {task.description}
             </p>
           )}
+
+          {/* Day-by-Day Progress Indicator Bar */}
+          <div
+            className="my-3 p-2.5 rounded-xl bg-slate-50 hover:bg-indigo-50/50 border border-slate-100 transition"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowProgressModal(true);
+            }}
+          >
+            <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
+              <span className="text-slate-600 flex items-center gap-1">
+                <TrendingUp className="w-3.5 h-3.5 text-indigo-600" />
+                Progress ({logCount} log{logCount === 1 ? '' : 's'})
+              </span>
+              <span className="text-indigo-700 font-bold">{progress}%</span>
+            </div>
+            <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+              <div
+                style={{ width: `${progress}%` }}
+                className={`h-full rounded-full transition-all duration-500 ${
+                  progress === 100
+                    ? 'bg-emerald-500'
+                    : progress > 50
+                    ? 'bg-indigo-600'
+                    : 'bg-indigo-500'
+                }`}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Footer Area: Due Date & Status dropdown */}
         <div
-          className="pt-4 border-t border-slate-100 mt-4 space-y-3"
+          className="pt-3 border-t border-slate-100 mt-2 space-y-3"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Due date info */}
@@ -153,6 +196,13 @@ const TaskCard = ({ task }) => {
         </div>
       </div>
 
+      {/* Day-by-Day Progress Modal */}
+      <TaskProgressModal
+        task={task}
+        isOpen={showProgressModal}
+        onClose={() => setShowProgressModal(false)}
+      />
+
       {/* Task Details Modal */}
       <TaskDetailModal
         task={task}
@@ -160,6 +210,10 @@ const TaskCard = ({ task }) => {
         onClose={() => setShowDetailModal(false)}
         onStatusChange={handleStatusChange}
         onDeleteClick={() => setShowDeleteModal(true)}
+        onOpenProgress={() => {
+          setShowDetailModal(false);
+          setShowProgressModal(true);
+        }}
       />
 
       {/* Delete Confirmation Modal */}

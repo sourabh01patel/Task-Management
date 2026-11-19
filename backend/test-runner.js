@@ -226,7 +226,39 @@ async function runTests() {
     });
     assert(patchStatus.status === 200 && patchStatus.data.task.status === 'Done', 'Quick status update PATCH returns updated task with status Done');
 
-    // 12. Dashboard Statistics
+    // 12. Add Day-by-Day Progress Log
+    const addProgressRes = await request(`/api/tasks/${taskBId}/progress`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token1}`,
+      },
+      body: {
+        note: 'Completed research and designed candlestick chart indicators',
+        progressPercentage: 45,
+        hoursSpent: 2.5,
+      },
+    });
+    assert(
+      addProgressRes.status === 200 &&
+      addProgressRes.data.task.dailyLogs.length === 1 &&
+      addProgressRes.data.task.progressPercentage === 45,
+      'Add day-by-day progress log with note and percentage'
+    );
+    const logId = addProgressRes.data.task.dailyLogs[0]._id;
+
+    // Delete progress log
+    const delProgressRes = await request(`/api/tasks/${taskBId}/progress/${logId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token1}` },
+    });
+    assert(
+      delProgressRes.status === 200 &&
+      delProgressRes.data.task.dailyLogs.length === 0,
+      'Delete daily progress log entry'
+    );
+
+    // 13. Dashboard Statistics
     const dashboard = await request('/api/dashboard/stats', {
       headers: { Authorization: `Bearer ${token1}` },
     });

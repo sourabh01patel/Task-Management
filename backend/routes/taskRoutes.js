@@ -7,6 +7,8 @@ const {
   updateTask,
   updateTaskStatus,
   deleteTask,
+  addProgressLog,
+  deleteProgressLog,
 } = require('../controllers/taskController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -23,6 +25,10 @@ router.route('/:id')
   .delete(deleteTask);
 
 router.patch('/:id/status', updateTaskStatus);
+
+// Day-by-day progress tracking endpoints
+router.post('/:id/progress', addProgressLog);
+router.delete('/:id/progress/:logId', deleteProgressLog);
 
 module.exports = router;
 

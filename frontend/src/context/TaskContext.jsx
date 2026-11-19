@@ -120,6 +120,40 @@ export const TaskProvider = ({ children }) => {
     }
   };
 
+  // Add daily progress log
+  const addProgressLog = async (taskId, logData) => {
+    try {
+      const data = await taskService.addProgressLog(taskId, logData);
+      setTasks((prev) =>
+        prev.map((t) => (t._id === taskId ? data.task : t))
+      );
+      showToast('Daily progress recorded!', 'success');
+      fetchStats();
+      return { success: true, task: data.task };
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Failed to record progress.';
+      showToast(msg, 'error');
+      return { success: false, message: msg };
+    }
+  };
+
+  // Delete daily progress log
+  const deleteProgressLog = async (taskId, logId) => {
+    try {
+      const data = await taskService.deleteProgressLog(taskId, logId);
+      setTasks((prev) =>
+        prev.map((t) => (t._id === taskId ? data.task : t))
+      );
+      showToast('Progress entry removed', 'success');
+      fetchStats();
+      return { success: true, task: data.task };
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Failed to remove entry.';
+      showToast(msg, 'error');
+      return { success: false, message: msg };
+    }
+  };
+
   const value = {
     tasks,
     stats,
@@ -133,6 +167,8 @@ export const TaskProvider = ({ children }) => {
     updateTask,
     updateTaskStatus,
     deleteTask,
+    addProgressLog,
+    deleteProgressLog,
   };
 
   return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;

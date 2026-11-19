@@ -5,7 +5,7 @@ const Task = require('../models/Task');
 // @access  Private
 const createTask = async (req, res, next) => {
   try {
-    const { title, description, dueDate, priority, status } = req.body;
+    const { title, description, dueDate, priority, status, progressPercentage } = req.body;
 
     if (!title || !dueDate) {
       return res.status(400).json({
@@ -21,6 +21,7 @@ const createTask = async (req, res, next) => {
       dueDate,
       priority: priority || 'Medium',
       status: status || 'To Do',
+      progressPercentage: progressPercentage !== undefined ? Number(progressPercentage) : 0,
       userId: req.user._id,
     });
 
@@ -138,7 +139,7 @@ const getTaskById = async (req, res, next) => {
 // @access  Private
 const updateTask = async (req, res, next) => {
   try {
-    const { title, description, dueDate, priority, status } = req.body;
+    const { title, description, dueDate, priority, status, progressPercentage } = req.body;
 
     const task = await Task.findOne({
       _id: req.params.id,
@@ -157,6 +158,7 @@ const updateTask = async (req, res, next) => {
     if (dueDate !== undefined) task.dueDate = dueDate;
     if (priority !== undefined) task.priority = priority;
     if (status !== undefined) task.status = status;
+    if (progressPercentage !== undefined) task.progressPercentage = Number(progressPercentage);
 
     const updatedTask = await task.save();
 
@@ -236,6 +238,105 @@ const deleteTask = async (req, res, next) => {
   }
 };
 
+// @desc    Add a day-by-day progress log to a task
+// @route   POST /api/tasks/:id/progress
+// @access  Private
+const addProgressLog = async (req, res, next) => {
+  try {
+    const { note, date, progressPercentage, hoursSpent } = req.body;
+
+    if (!note || !note.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a note describing your progress',
+      });
+    }
+
+    const task = await Task.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: 'Task not found or you are not authorized to update it',
+      });
+    }
+
+    const numericProgress =
+      progressPercentage !== undefined
+        ? Math.min(100, Math.max(0, Number(progressPercentage)))
+        : task.progressPercentage;
+
+    const newLog = {
+      note: note.trim(),
+      date: date ? new Date(date) : new Date(),
+      progressPercentage: numericProgress,
+      hoursSpent: hoursSpent !== undefined ? Number(hoursSpent) : 0,
+      createdAt: new Date(),
+    };
+
+    task.dailyLogs.unshift(newLog);
+    task.progressPercentage = numericProgress;
+
+    // Automatic status update based on completion percentage
+    if (task.progressPercentage === 100) {
+      task.status = 'Done';
+    } else if (task.progressPercentage > 0 && task.status === 'To Do') {
+      task.status = 'In Progress';
+    }
+
+    const updatedTask = await task.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Daily progress recorded successfully',
+      task: updatedTask,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete a daily progress log entry
+// @route   DELETE /api/tasks/:id/progress/:logId
+// @access  Private
+const deleteProgressLog = async (req, res, next) => {
+  try {
+    const task = await Task.findOne({
+      _id: req.params.id,
+      userId: req.user._id,
+    });
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: 'Task not found or you are not authorized to modify it',
+      });
+    }
+
+    task.dailyLogs = task.dailyLogs.filter(
+      (log) => log._id.toString() !== req.params.logId
+    );
+
+    // If there are remaining logs, sync progress to the most recent log
+    if (task.dailyLogs.length > 0) {
+      task.progressPercentage = task.dailyLogs[0].progressPercentage || 0;
+    }
+
+    const updatedTask = await task.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Progress log deleted successfully',
+      task: updatedTask,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createTask,
   getTasks,
@@ -243,5 +344,7 @@ module.exports = {
   updateTask,
   updateTaskStatus,
   deleteTask,
+  addProgressLog,
+  deleteProgressLog,
 };
 

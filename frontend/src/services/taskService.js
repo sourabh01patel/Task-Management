@@ -42,5 +42,17 @@ export const taskService = {
     const response = await api.delete(`/tasks/${id}`);
     return response.data;
   },
+
+  // Add daily progress log
+  addProgressLog: async (taskId, logData) => {
+    const response = await api.post(`/tasks/${taskId}/progress`, logData);
+    return response.data;
+  },
+
+  // Delete a daily progress log entry
+  deleteProgressLog: async (taskId, logId) => {
+    const response = await api.delete(`/tasks/${taskId}/progress/${logId}`);
+    return response.data;
+  },
 };
 
