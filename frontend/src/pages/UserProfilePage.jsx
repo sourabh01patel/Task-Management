@@ -1,7 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/formatters';
-import { User, Mail, Lock, ShieldCheck, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  User,
+  Mail,
+  Lock,
+  ShieldCheck,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+  Camera,
+  Trash2,
+  Upload,
+} from 'lucide-react';
 
 const UserProfilePage = () => {
   const { user, updateProfile } = useAuth();
@@ -12,12 +23,87 @@ const UserProfilePage = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
+  // Photo upload states
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [photoSubmitting, setPhotoSubmitting] = useState(false);
+  const [photoSuccess, setPhotoSuccess] = useState('');
+  const [photoError, setPhotoError] = useState('');
+  const fileInputRef = useRef(null);
+
   const [profileSubmitting, setProfileSubmitting] = useState(false);
   const [passwordSubmitting, setPasswordSubmitting] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState('');
   const [profileError, setProfileError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [passwordError, setPasswordError] = useState('');
+
+  // Handle Photo File Selection
+  const handlePhotoSelect = (e) => {
+    setPhotoError('');
+    setPhotoSuccess('');
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setPhotoError('Please select a valid image file (PNG, JPG, WebP).');
+      return;
+    }
+
+    // Check file size (max 3MB)
+    if (file.size > 3 * 1024 * 1024) {
+      setPhotoError('Image size must be smaller than 3MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPhotoPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Save selected photo
+  const handleSavePhoto = async () => {
+    if (!photoPreview) return;
+    setPhotoSubmitting(true);
+    setPhotoError('');
+    setPhotoSuccess('');
+
+    const result = await updateProfile({ avatar: photoPreview });
+    setPhotoSubmitting(false);
+
+    if (result.success) {
+      setPhotoSuccess('Profile photo updated successfully!');
+      setPhotoPreview(null);
+    } else {
+      setPhotoError(result.message || 'Failed to update profile photo.');
+    }
+  };
+
+  // Remove existing photo
+  const handleRemovePhoto = async () => {
+    setPhotoSubmitting(true);
+    setPhotoError('');
+    setPhotoSuccess('');
+
+    const result = await updateProfile({ avatar: '' });
+    setPhotoSubmitting(false);
+
+    if (result.success) {
+      setPhotoSuccess('Profile photo removed.');
+      setPhotoPreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } else {
+      setPhotoError(result.message || 'Failed to remove profile photo.');
+    }
+  };
+
+  // Cancel photo preview
+  const handleCancelPhoto = () => {
+    setPhotoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   // Handle Name and Email updates
   const handleUpdateInfo = async (e) => {
@@ -79,6 +165,8 @@ const UserProfilePage = () => {
     }
   };
 
+  const currentDisplayAvatar = photoPreview || user?.avatar;
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
       {/* Header */}
@@ -88,26 +176,123 @@ const UserProfilePage = () => {
           Account & Profile Settings
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Manage your personal information, security credentials, and preferences
+          Manage your personal photo, information, and security credentials
         </p>
       </div>
 
-      {/* User Info Overview Banner */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center gap-6">
-        <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 text-white font-extrabold text-3xl flex items-center justify-center shadow-lg shadow-indigo-200 flex-shrink-0">
-          {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+      {/* Hidden file input for photo upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handlePhotoSelect}
+        accept="image/png, image/jpeg, image/jpg, image/webp"
+        className="hidden"
+      />
+
+      {/* User Info Overview Banner with Avatar Upload */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center gap-6">
+        {/* Avatar with Camera Trigger */}
+        <div className="relative group">
+          {currentDisplayAvatar ? (
+            <img
+              src={currentDisplayAvatar}
+              alt={user?.name || 'User'}
+              className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-xl shadow-slate-200 flex-shrink-0"
+            />
+          ) : (
+            <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 text-white font-extrabold text-3xl flex items-center justify-center shadow-lg shadow-indigo-200 flex-shrink-0 border-4 border-white">
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            </div>
+          )}
+
+          {/* Quick upload camera overlay button */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            title="Upload new photo"
+            className="absolute bottom-0 right-0 p-2.5 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 shadow-md transition-transform hover:scale-110 cursor-pointer border-2 border-white"
+          >
+            <Camera className="w-4 h-4" />
+          </button>
         </div>
+
+        {/* Text and Actions */}
         <div className="text-center sm:text-left flex-1">
           <h2 className="text-xl font-bold text-slate-900">{user?.name}</h2>
           <p className="text-sm text-slate-500 mt-0.5">{user?.email}</p>
+
           <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-slate-400">
-            <span>Member since: <strong className="text-slate-700">{formatDate(user?.createdAt)}</strong></span>
+            <span>
+              Member since: <strong className="text-slate-700">{formatDate(user?.createdAt)}</strong>
+            </span>
             <span>•</span>
             <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold">
               <ShieldCheck className="w-4 h-4" />
               Verified User
             </span>
           </div>
+
+          {/* Photo Actions Bar */}
+          <div className="mt-4 flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+            >
+              <Upload className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Choose Photo</span>
+            </button>
+
+            {user?.avatar && !photoPreview && (
+              <button
+                type="button"
+                onClick={handleRemovePhoto}
+                disabled={photoSubmitting}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Remove Photo</span>
+              </button>
+            )}
+
+            {photoPreview && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSavePhoto}
+                  disabled={photoSubmitting}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 shadow-sm transition"
+                >
+                  {photoSubmitting ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <span>Save Photo</span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelPhoto}
+                  className="px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-500 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Photo feedback alerts */}
+          {photoSuccess && (
+            <p className="mt-2 text-xs font-semibold text-emerald-600 flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>{photoSuccess}</span>
+            </p>
+          )}
+          {photoError && (
+            <p className="mt-2 text-xs font-semibold text-rose-600 flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5" />
+              <span>{photoError}</span>
+            </p>
+          )}
         </div>
       </div>
 
@@ -271,4 +456,3 @@ const UserProfilePage = () => {
 };
 
 export default UserProfilePage;
-

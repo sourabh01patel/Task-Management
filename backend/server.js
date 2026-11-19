@@ -54,9 +54,9 @@ app.use(
   })
 );
 
-// Body parsing middleware with size limits
-app.use(express.json({ limit: '50kb' }));
-app.use(express.urlencoded({ extended: true, limit: '50kb' }));
+// Body parsing middleware with size limits (supports avatar image uploads)
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 // Apply general rate limiter to all API endpoints
 app.use('/api', apiLimiter);

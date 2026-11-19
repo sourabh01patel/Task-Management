@@ -48,6 +48,7 @@ const registerUser = async (req, res, next) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        avatar: user.avatar || '',
         createdAt: user.createdAt,
       },
     });
@@ -99,6 +100,7 @@ const loginUser = async (req, res, next) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        avatar: user.avatar || '',
         createdAt: user.createdAt,
       },
     });
@@ -136,10 +138,11 @@ const updateProfile = async (req, res, next) => {
       });
     }
 
-    const { name, email, currentPassword, newPassword } = req.body;
+    const { name, email, avatar, currentPassword, newPassword } = req.body;
 
     if (name) user.name = name;
     if (email) user.email = email.toLowerCase();
+    if (avatar !== undefined) user.avatar = avatar;
 
     // If updating password
     if (newPassword) {
@@ -177,6 +180,7 @@ const updateProfile = async (req, res, next) => {
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
+        avatar: updatedUser.avatar || '',
         createdAt: updatedUser.createdAt,
       },
     });

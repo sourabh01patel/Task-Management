@@ -90,9 +90,17 @@ const Sidebar = ({ isOpen, onClose }) => {
         <div className="p-4 border-t border-slate-100">
           <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-sm flex-shrink-0">
-                {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-              </div>
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user?.name || 'User'}
+                  className="w-9 h-9 rounded-full object-cover border border-slate-200 flex-shrink-0"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-sm flex-shrink-0">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                </div>
+              )}
               <div className="truncate">
                 <p className="text-sm font-semibold text-slate-800 truncate">
                   {user?.name || 'User'}

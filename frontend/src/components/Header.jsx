@@ -61,10 +61,20 @@ const Header = ({ onOpenSidebar }) => {
 
         <Link
           to="/profile"
-          className="p-1.5 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-slate-50 transition"
+          className="p-1 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-slate-50 transition flex items-center"
           title="User Profile"
         >
-          <UserCircle className="w-6 h-6" />
+          {user?.avatar ? (
+            <img
+              src={user.avatar}
+              alt={user?.name || 'User'}
+              className="w-8 h-8 rounded-full object-cover border border-slate-200 shadow-xs"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs">
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            </div>
+          )}
         </Link>
       </div>
     </header>
